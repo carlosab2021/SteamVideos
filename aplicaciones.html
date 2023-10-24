@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Selecciona una aplicación</title>
+</head>
+<body>
+    <h1>Selecciona una aplicación:</h1>
+    <select id="appSelector">
+        <option value="sentiment_analysis">Análisis de Sentimiento</option>
+        <option value="PlayTimeGenre">Tiempo de Juego por Género</option>
+        <!-- Agrega más opciones según tus aplicaciones -->
+    </select>
+    <button onclick="launchApp()">Abrir Aplicación</button>
+
+    <script>
+        function launchApp() {
+            var selectedApp = document.getElementById("appSelector").value;
+            window.location.href = '/' + selectedApp;
+        }
+    </script>
+</body>
+</html>

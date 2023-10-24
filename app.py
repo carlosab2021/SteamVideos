@@ -1,8 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, render_template, redirect, jsonify
 import pandas as pd
 
+app = Flask(__name__, template_folder=".")
 app = Flask(__name__)
 
+@app.route('/')
+def select_app():
+    return render_template('aplicaciones.html')
 # Carga la base de datos desde el archivo CSV
 data = pd.read_csv('resultado_union_actualizado.csv')
 data2 = pd.read_csv('base_de_datos_con_sentimiento.csv')
@@ -131,6 +135,6 @@ def sentiment_analysis(ano):
 
     return jsonify(result)
 
-# if __name__ == '__main__':
-    # app.run(debug=True)
+#if __name__ == '__main__':
+     # app.run (debug=True)
 
