@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, redirect, jsonify
 import pandas as pd
 
 app = Flask(__name__, template_folder=".")
+app.config['JSON_AS_ASCII'] = False
 app = Flask(__name__)
 
 @app.route('/')
