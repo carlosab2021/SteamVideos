@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aplicación Creada Para Steam Juegos</title>
+    <style>
+        body {
+            background-color: black; /* Fondo negro */
+            color: white; /* Texto blanco */
+            text-align: center; /* Centrar el contenido */
+            font-family: Arial, sans-serif; /* Fuente del texto */
+        }
+
+        h1 {
+            color: #3498db; /* Cambia el color del título */
+        }
+
+        form {
+            margin-top: 20px; /* Espacio entre el título y el formulario */
+        }
+
+        #resultContainer {
+            margin-top: 20px; /* Espacio entre el formulario y los resultados */
+            border: 1px solid #3498db; /* Borde alrededor de los resultados */
+            padding: 10px; /* Espacio interno en los resultados */
+            background-color: #222; /* Color de fondo de los resultados */
+        }
+    </style>
+</head>
+<body>
+    <h1>Selecciona una aplicación:</h1>
+    <form method="post" action="/launch_app">
+        <select id="appSelector" name="selected_app">
+            <option value="UserForGenre">Horas jugadas para el género</option>
+            <option value="UsersRecommend">juegos MÁS recomendados</option>
+            <option value="UsersNotRecommend">juegos MENOS recomendados</option>
+            <option value="sentiment_analysis">Análisis de Sentimiento</option>
+            <option value="PlayTimeGenre">Tiempo de Juego por Género</option>
+        </select>
+        
+        <input type="text" name="input_data" placeholder="Ingresa un año o género">
+        <input type="submit" value="Abrir Aplicación">
+    </form>
+
+    <div id="resultContainer">
+        <!-- Aquí se mostrarán los resultados -->
+    </div>
+
+    <script>
+        document.querySelector("form").addEventListener("submit", function (e) {
+            e.preventDefault(); // Evita que el formulario se envíe normalmente.
+            launchApp();
+        });
+
+        function launchApp() {
+            var selectedApp = document.getElementById("appSelector").value;
+            var input_data = document.querySelector("input[name='input_data']").value;
+
+            // Realiza una solicitud AJAX a tu ruta Flask
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/launch_app", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Parsea el resultado JSON y actualiza el contenido en resultContainer
+                    var result = JSON.parse(xhr.responseText);
+                    var resultContainer = document.getElementById("resultContainer");
+                    resultContainer.innerHTML = JSON.stringify(result, null, 2);
+                }
+            };
+            xhr.send("selected_app=" + selectedApp + "&input_data=" + input_data);
+        }
+    </script>
+</body>
+</html>
+
+
+

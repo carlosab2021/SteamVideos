@@ -1,16 +1,43 @@
-from flask import Flask, request, render_template, redirect, jsonify
+from flask import Flask, request, render_template, jsonify
 import pandas as pd
 
 app = Flask(__name__, template_folder=".")
 app.config['JSON_AS_ASCII'] = False
-app = Flask(__name__)
 
-@app.route('/')
-def select_app():
-    return render_template('aplicaciones.html')
 # Carga la base de datos desde el archivo CSV
 data = pd.read_csv('resultado_union_actualizado.csv')
 data2 = pd.read_csv('base_de_datos_con_sentimiento.csv')
+@app.route('/')
+def select_app():
+    return render_template('aplicaciones.html')
+# Ruta para recibir datos del formulario y ejecutar la aplicación correspondiente
+@app.route('/launch_app', methods=['POST'])
+def launch_app():
+    selected_app = request.form['selected_app']
+    input_data = request.form['input_data']
+    result = {}
+
+    if selected_app == 'UserForGenre':
+        result = user_for_genre(input_data)
+    elif selected_app == 'UsersRecommend':
+        result = users_recommend(int(input_data))
+    elif selected_app == 'UsersNotRecommend':
+        result = users_not_recommend(int(input_data))
+    elif selected_app == 'sentiment_analysis':
+        result = sentiment_analysis(int(input_data))
+    elif selected_app == 'PlayTimeGenre':
+        result = playtime_genre(input_data)
+    else:
+        result = {"message": "Aplicación no válida."}
+
+    # Construir un diccionario con el resultado
+    response_data = {"result": result}
+
+    # Devolver el diccionario serializado como JSON
+    return response_data
+
+
+
 
 # Ruta para obtener el año con más horas jugadas para un género dado
 @app.route('/PlayTimeGenre/<genero>', methods=['GET'])
@@ -18,17 +45,17 @@ def playtime_genre(genero):
     genero = genero.strip('[]').strip("'")  # Elimina los corchetes para obtener el género real
     # Verifica si la cadena proporcionada tiene al menos 4 caracteres 
     if len(genero) < 4:
-        return jsonify({"message": "La búsqueda debe contener al menos 4 caracteres."}, 400)
+        return {"message": "La búsqueda debe contener al menos 4 caracteres."}, 400
     filtered_data = data[data['genres'] .str.contains(genero, case=False, na=False)]
 
     if filtered_data.empty:
-        return jsonify({"message": "No se encontraron datos para el género especificado."}, 404)
+        return {"message": "No se encontraron datos para el género especificado."}, 404
 
     max_horas = filtered_data['playtime_forever'].max()
     año_max_horas = filtered_data[filtered_data['playtime_forever'] == max_horas]['release_date'].values[0]
     
 
-    return jsonify({"Año de lanzamiento con más horas jugadas para " + genero: año_max_horas})
+    return {"Año de lanzamiento con más horas jugadas para " + genero: año_max_horas}
 
 
 # Ruta para obtener el usuario con más horas jugadas y la acumulación por año para un género dado
@@ -38,7 +65,7 @@ def user_for_genre(genero):
     filtered_data = data[data['genres'].str.contains(genero, case=False, na=False)]
 
     if filtered_data.empty:
-        return jsonify({"message": "No se encontraron datos para el género especificado."}, 404)
+        return {"message": "No se encontraron datos para el género especificado."}, 404
 
     # Encuentra el usuario con más horas jugadas para el género
     max_horas_usuario = filtered_data[filtered_data['playtime_forever'] == filtered_data['playtime_forever'].max()]['user_id'].values[0]
@@ -58,7 +85,7 @@ def user_for_genre(genero):
         "Horas jugadas": acumulacion_por_año.to_dict(orient='records')
     }
 
-    return jsonify(resultado)
+    return resultado
 
 
 # Ruta para obtener el top 3 de juegos MÁS recomendados por usuarios para un año dado
@@ -68,7 +95,7 @@ def users_recommend(ano):
     filtered_data = data[data['fecha_convertida'].str.contains(str(ano))]
 
     if filtered_data.empty:
-        return jsonify({"message": "No se encontraron datos para el año especificado."}, 404)
+        return {"message": "No se encontraron datos para el año especificado."}, 404
 
     # Filtrar solo los juegos con recomendaciones positivas o neutrales (recommend = True)
     positive_reviews = filtered_data[filtered_data['recommend'] == True]
@@ -87,7 +114,7 @@ def users_recommend(ano):
     # Formatear el resultado en el formato requerido
     resultado = [{"Puesto " + str(i + 1): juego['title']} for i, juego in top_games.iterrows()]
 
-    return jsonify(resultado)
+    return resultado
 
 
 # Ruta para obtener el top 3 de juegos MENOS recomendados por usuarios para un año dado
@@ -97,7 +124,7 @@ def users_not_recommend(ano):
     filtered_data = data[data['fecha_convertida'].str.contains(str(ano))]
 
     if filtered_data.empty:
-        return jsonify({"message": "No se encontraron datos para el año especificado."}, 404)
+        return {"message": "No se encontraron datos para el año especificado."}, 404
 
     # Filtrar solo los juegos con recomendaciones negativas y comentarios negativos
     negative_reviews = filtered_data[(filtered_data['recommend'] == False)]
@@ -116,7 +143,7 @@ def users_not_recommend(ano):
     # Formatear el resultado en el formato requerido
     resultado = [{"Puesto " + str(i + 1): juego['title']} for i, juego in top_not_recommend_games.iterrows()]
 
-    return jsonify(resultado)
+    return resultado
 
 
 # Ruta para obtener el análisis de sentimiento según el año de lanzamiento
@@ -126,7 +153,7 @@ def sentiment_analysis(ano):
     filtered_data2 = data2[data2['fecha_convertida'].str.contains(str(ano))]
 
     if filtered_data2.empty:
-        return jsonify({"message": "No se encontraron datos para el año especificado."}, 404)
+        return {"message": "No se encontraron datos para el año especificado."}, 404
 
     # Realiza el recuento de análisis de sentimiento
     sentiment_counts = filtered_data2['sentiment'].value_counts()
@@ -134,8 +161,8 @@ def sentiment_analysis(ano):
     # Convierte el resultado a un diccionario
     result = sentiment_counts.to_dict()
 
-    return jsonify(result)
+    return result
 
-# if __name__ == '__main__':
-      #app.run (debug=True)
+if __name__ == '__main__':
+    app.run (debug=True)
 
