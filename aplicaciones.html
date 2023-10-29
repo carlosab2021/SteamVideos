@@ -35,15 +35,32 @@
             <option value="UsersNotRecommend">juegos MENOS recomendados</option>
             <option value="sentiment_analysis">Análisis de Sentimiento</option>
             <option value="PlayTimeGenre">Tiempo de Juego por Género</option>
+            <option value="recomendacion_juego">Recomendaciones por Item</option>
+            <option value="recomendacion_user_juego">Recomendaciones por Usuario</option>
         </select>
         
         <input type="text" name="input_data" placeholder="Ingresa un año o género">
         <input type="submit" value="Abrir Aplicación">
+        
     </form>
 
     <div id="resultContainer">
-        <!-- Aquí se mostrarán los resultados -->
+      
     </div>
+    
+    <div id="resultContainer">
+        <!-- Verifica si result está definido antes de mostrarlo -->
+        {% if result %}
+            <!-- Muestra el enlace para abrir el gráfico en una nueva ventana -->
+            <a href="/open_graph" target="_blank">Abrir gráfico interactivo</a>
+        {% else %}
+            <!-- Muestra un mensaje de que no hay resultados aún -->
+            <p>Para las APP Recomendaciones, ver los gráficos por Similitud</p>
+        {% endif %}
+    </div>
+    
+    <!-- Botón para abrir el gráfico interactivo -->
+    <button onclick="openGraph()">Abrir gráfico interactivo</button>
 
     <script>
         document.querySelector("form").addEventListener("submit", function (e) {
@@ -69,9 +86,15 @@
             };
             xhr.send("selected_app=" + selectedApp + "&input_data=" + input_data);
         }
+
+        // Función para abrir el gráfico interactivo en una nueva ventana
+        function openGraph() {
+            window.open('/recommendation_plot.html', '_blank');
+        }
     </script>
 </body>
 </html>
+
 
 
 
