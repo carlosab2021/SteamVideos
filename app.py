@@ -9,9 +9,9 @@ app = Flask(__name__, template_folder=".")
 app.config['JSON_AS_ASCII'] = False
 
 # Carga la base de datos desde el archivo CSV
-data = pd.read_csv('resultado_union_actualizado.csv')
+data = pd.read_csv('base_de_datos_con_sentimiento.csv')
 data2 = pd.read_csv('base_de_datos_con_sentimiento.csv')
-games_data = pd.read_csv('resultado_union_actualizado.csv') 
+games_data = pd.read_csv('base_de_datos_con_sentimiento.csv') 
 @app.route('/')
 def select_app():
     return render_template('aplicaciones.html')
