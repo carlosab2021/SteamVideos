@@ -4,14 +4,14 @@ import plotly.express as px
 from flask import Flask, request, render_template, jsonify
 import pandas as pd
 import json
+import numpy as np 
 
 app = Flask(__name__, template_folder=".")
 app.config['JSON_AS_ASCII'] = False
 
 # Carga la base de datos desde el archivo CSV
 data = pd.read_csv('base_de_datos_con_sentimiento.csv')
-data2 = pd.read_csv('base_de_datos_con_sentimiento.csv')
-games_data = pd.read_csv('base_de_datos_con_sentimiento.csv') 
+
 @app.route('/')
 def select_app():
     return render_template('aplicaciones.html')
@@ -42,16 +42,7 @@ def launch_app():
         result = {"message": "Aplicación no válida."}
 
     # Obtener recomendaciones y gráfico interactivo solo si la aplicación es 'recomendacion_juego y recomendacion_user_juego '
-    if selected_app == 'recomendacion_user_juego':
-        recomendacion_user_juego = get_user_recommendations(input_data)
-        result["Recomendaciones de juegos por Usuario"] = recomendacion_user_juegos
-        # También puedes agregar el gráfico interactivo aquí si es necesario
-	# Construir un diccionario con el resultado
-    response_data = {"result": result}
-
-    # Devolver el diccionario serializado como JSON
-    return response_data
-
+    
     if selected_app == 'recomendacion_juego':
         recommended_games = get_recommendations(int(input_data))
         result["Recomendaciones de juegos"] = recommended_games
@@ -65,26 +56,19 @@ def launch_app():
 
 
 # Preprocesamiento de datos para el sistema de recomendación item-item y user-item
-games_data['review'].fillna('', inplace=True)
+data['review'].fillna('', inplace=True)
 tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf_vectorizer.fit_transform(games_data['review'])
+tfidf_matrix = tfidf_vectorizer.fit_transform(data['review'])
 cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
-
-# Función para obtener juegos recomendados basados en un juego dado
-
-
-# Función para obtener juegos recomendados y mostrar un gráfico interactivo
-# Resto de tu código ...
-
 # Función para obtener juegos recomendados y mostrar un gráfico interactivo
 def get_recommendations(game_id, cosine_sim=cosine_sim):
-    game_index = games_data[games_data['item_id'] == game_id].index[0]
+    game_index = data[data['item_id'] == game_id].index[0]
     sim_scores = list(enumerate(cosine_sim[game_index]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = sim_scores[1:6]  # Excluye el juego en sí (índice 0) y toma los 5 más similares
     game_indices = [i[0] for i in sim_scores]
     
-    recommended_games = games_data['title'].iloc[game_indices].tolist()
+    recommended_games = data['title'].iloc[game_indices].tolist()
 
     # Crear un DataFrame con los juegos recomendados y sus similitudes
     recommendations_df = pd.DataFrame({
@@ -102,12 +86,12 @@ def get_recommendations(game_id, cosine_sim=cosine_sim):
 
 # Función para obtener juegos recomendados basados en un juego dado
 def get_user_recommendations(user_id, cosine_sim=cosine_sim):
-    game_index = games_data[games_data['user_id'] == user_id].index[0]
+    game_index = data[data['user_id'] == user_id].index[0]
     sim_scores = list(enumerate(cosine_sim[game_index]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = sim_scores[1:6]  # Excluye el juego en sí (índice 0) y toma los 5 más similares
     game_indices = [i[0] for i in sim_scores]
-    recommendacion_user_juego = games_data['title'].iloc[game_indices].tolist()
+    recommendacion_user_juego = data['title'].iloc[game_indices].tolist()
     
     # Crear un DataFrame con los juegos recomendados y sus similitudes
     recommendations_df = pd.DataFrame({
@@ -127,6 +111,8 @@ def get_user_recommendations(user_id, cosine_sim=cosine_sim):
 @app.route('/recomendacion_juego/<int:item_id>', methods=['GET'])
 def recomendacion_juego(item_id):
     recommended_games = get_recommendations(item_id)
+    if not recommended_games:
+        return {"message": "No se encontraron Recomendaciones"}, 404
     return {"recommended_games": recommended_games}
 
 @app.route('/recommendation_plot.html')
@@ -139,6 +125,8 @@ def open_graph():
 @app.route('/recomendacion_user_juego/<int:user_id>', methods=['GET'])
 def recomendacion_user_juego(user_id):
     recomendacion_user_juego = get_user_recommendations(user_id)
+    if not recomendacion_user_juego:
+        return {"message": "No se encontraron Recomendaciones"}, 404
     return {"recomendacion_user_juego": recomendacion_user_juego}
 
 # Ruta para obtener el año con más horas jugadas para un género dado
@@ -200,7 +188,7 @@ def users_recommend(ano):
         return {"message": "No se encontraron datos para el año especificado."}, 404
 
     # Filtrar solo los juegos con recomendaciones positivas o neutrales (recommend = True)
-    positive_reviews = filtered_data[filtered_data['recommend'] == True]
+    positive_reviews = filtered_data[(filtered_data['recommend'] == True) | (filtered_data['sentiment'] == 'Positive')]
 
     # Contar la cantidad de recomendaciones por juego
     game_recommend_counts = positive_reviews['item_id'].value_counts().reset_index()
@@ -228,8 +216,9 @@ def users_not_recommend(ano):
     if filtered_data.empty:
         return {"message": "No se encontraron datos para el año especificado."}, 404
 
-    # Filtrar solo los juegos con recomendaciones negativas y comentarios negativos
-    negative_reviews = filtered_data[(filtered_data['recommend'] == False)]
+        # Filtrar solo los juegos con recomendaciones negativas y comentarios negativos
+    negative_reviews = filtered_data[(filtered_data['recommend'] == False) | (filtered_data['sentiment'] == 'Negative')]
+
 
     # Contar la cantidad de juegos menos recomendados
     game_not_recommend_counts = negative_reviews['item_id'].value_counts().reset_index()
@@ -252,19 +241,18 @@ def users_not_recommend(ano):
 @app.route('/sentiment_analysis/<int:ano>', methods=['GET'])
 def sentiment_analysis(ano):
     # Filtra los datos para el año especificado
-    filtered_data2 = data2[data2['fecha_convertida'].str.contains(str(ano))]
+    filtered_data = data[data['fecha_convertida'].str.contains(str(ano))]
 
-    if filtered_data2.empty:
+    if filtered_data.empty:
         return {"message": "No se encontraron datos para el año especificado."}, 404
 
     # Realiza el recuento de análisis de sentimiento
-    sentiment_counts = filtered_data2['sentiment'].value_counts()
+    sentiment_counts = filtered_data['sentiment'].value_counts()
 
     # Convierte el resultado a un diccionario
     result = sentiment_counts.to_dict()
 
     return result
-
-# if __name__ == '__main__':
-    # app.run (debug=True)
+if __name__ == '__main__':
+     app.run (debug=True)
 
