@@ -249,6 +249,9 @@ def sentiment_analysis(ano):
     # Realiza el recuento de análisis de sentimiento
     sentiment_counts = filtered_data['sentiment'].value_counts()
 
+    # Convierte el resultado a un diccionario
+    result = sentiment_counts.to_dict()
+
     return result
 
 if __name__ == '__main__':
