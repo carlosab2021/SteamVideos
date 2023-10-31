@@ -4,13 +4,13 @@ import plotly.express as px
 from flask import Flask, request, render_template, jsonify
 import pandas as pd
 import json
-import numpy as np 
 
 app = Flask(__name__, template_folder=".")
 app.config['JSON_AS_ASCII'] = False
 
 # Carga la base de datos desde el archivo CSV
 data = pd.read_csv('base_de_datos_con_sentimiento.csv')
+data_game = pd.read_csv('base_de_datos_muestra.csv')
 
 @app.route('/')
 def select_app():
@@ -56,19 +56,19 @@ def launch_app():
 
 
 # Preprocesamiento de datos para el sistema de recomendación item-item y user-item
-data['review'].fillna('', inplace=True)
+data_game['review'].fillna('', inplace=True)
 tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf_vectorizer.fit_transform(data['review'])
+tfidf_matrix = tfidf_vectorizer.fit_transform(data_game['review'])
 cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
 # Función para obtener juegos recomendados y mostrar un gráfico interactivo
 def get_recommendations(game_id, cosine_sim=cosine_sim):
-    game_index = data[data['item_id'] == game_id].index[0]
+    game_index = data_game[data_game['item_id'] == game_id].index[0]
     sim_scores = list(enumerate(cosine_sim[game_index]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = sim_scores[1:6]  # Excluye el juego en sí (índice 0) y toma los 5 más similares
     game_indices = [i[0] for i in sim_scores]
     
-    recommended_games = data['title'].iloc[game_indices].tolist()
+    recommended_games = data_game['title'].iloc[game_indices].tolist()
 
     # Crear un DataFrame con los juegos recomendados y sus similitudes
     recommendations_df = pd.DataFrame({
@@ -86,12 +86,12 @@ def get_recommendations(game_id, cosine_sim=cosine_sim):
 
 # Función para obtener juegos recomendados basados en un juego dado
 def get_user_recommendations(user_id, cosine_sim=cosine_sim):
-    game_index = data[data['user_id'] == user_id].index[0]
+    game_index = data_game[data_game['user_id'] == user_id].index[0]
     sim_scores = list(enumerate(cosine_sim[game_index]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = sim_scores[1:6]  # Excluye el juego en sí (índice 0) y toma los 5 más similares
     game_indices = [i[0] for i in sim_scores]
-    recommendacion_user_juego = data['title'].iloc[game_indices].tolist()
+    recommendacion_user_juego = data_game['title'].iloc[game_indices].tolist()
     
     # Crear un DataFrame con los juegos recomendados y sus similitudes
     recommendations_df = pd.DataFrame({
@@ -106,7 +106,7 @@ def get_user_recommendations(user_id, cosine_sim=cosine_sim):
     fig.write_html('recommendation_plot.html', include_plotlyjs='cdn')
 
     return recommendacion_user_juego
-
+    
 # Ruta para obtener recomendación de juegos similares
 @app.route('/recomendacion_juego/<int:item_id>', methods=['GET'])
 def recomendacion_juego(item_id):
@@ -249,10 +249,8 @@ def sentiment_analysis(ano):
     # Realiza el recuento de análisis de sentimiento
     sentiment_counts = filtered_data['sentiment'].value_counts()
 
-    # Convierte el resultado a un diccionario
-    result = sentiment_counts.to_dict()
-
     return result
+
 if __name__ == '__main__':
      app.run (debug=True)
 
