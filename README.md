@@ -121,4 +121,4 @@ Identificación de Outliers
 ![image](https://github.com/carlosab2021/cabaez_labs/assets/86332466/49ced886-2712-4bd6-bd50-c9bcd7378458)
 ![image](https://github.com/carlosab2021/cabaez_labs/assets/86332466/a320f9e1-eafe-4086-81a7-682830227ebb)
 
-links Render: [https://steamvideojuegos.onrender.com/ Video: https://youtu.be/BNlYJqtDFxI
+links Render: [https://steamvideojuegos.onrender.com/ Video: https://youtu.be/DFdkYL8TqII
