@@ -70,8 +70,10 @@ Para calcular la similitud entre juegos, se utiliza TfidfVectorizer. Esta técni
 Por último, se utiliza linear_kernel para calcular la similitud de coseno entre los vectores TF-IDF de los juegos. El resultado es una matriz de similitud que muestra cuán similares son los juegos entre sí en función de su contenido. El coseno de los ángulos entre los vectores se utiliza como medida de similitud, donde un valor más cercano a 1 indica una mayor similitud.</p>
 	
 <p align="justify">Recomendación de Juegos: Cuando un usuario proporciona el item_id, el sistema busca juegos similares en la matriz de similitud. Esto se logra encontrando las filas de la matriz que corresponden al juego de entrada y seleccionando los juegos más similares. Los 5 juegos con la similitud de coseno más alta se recomiendan al usuario, del mismo modo se puede acceder al gráfico interactivo de recomendaciones por similitud, en el archivo recommendation_plot.html, este archivo es temporal y se genera cada vez que se realiza una consulta en el sistema de recomendaciones, a continuación captura de imágenes sobre el funcionamiento del sistema:</p>
-![image](https://github.com/carlosab2021/SteamVideos/assets/86332466/88fbeb44-18c7-46e7-ad23-2a2a69308917)
-![image](https://github.com/carlosab2021/SteamVideos/assets/86332466/4fa4291a-4390-4c98-be3b-43a5219e7472)
+<p align="center">
+<img src=https://github.com/carlosab2021/SteamVideos/assets/86332466/88fbeb44-18c7-46e7-ad23-2a2a69308917></p>
+<p align="center">
+<img src=https://github.com/carlosab2021/SteamVideos/assets/86332466/4fa4291a-4390-4c98-be3b-43a5219e7472></p>
 
 
 
@@ -85,8 +87,10 @@ Sistema de Recomendación User-Item:
 En este caso, no se utiliza TfidfVectorizer para procesar el contenido de los juegos. En su lugar, se utilizan las interacciones de los usuarios con los juegos. Cada usuario tiene una representación de sus interacciones, que pueden incluir calificaciones, reseñas, tiempo de juego, etc., en forma de vectores.</p>
 Al igual que en el sistema item-item, se utiliza linear_kernel y la similitud de coseno para calcular la similitud entre los usuarios. Esto se hace comparando los vectores de interacción de los usuarios.
 Recomendación de Juegos para un Usuario: Cuando un usuario proporciona su user_id, el sistema calcula la similitud del usuario con otros usuarios. Luego, se identifican los juegos preferidos por usuarios similares y se recomiendan al usuario en función de esas preferencias compartidas. Los 5 juegos que los usuarios similares han apreciado se recomiendan al usuario, del mismo modo se puede acceder al gráfico interactivo de recomendaciones por similitud, en el archivo recommendation_plot.html, este archivo es temporal y se genera cada vez que se realiza una consulta en el sistema de recomendaciones, a continuación captura de imágenes sobre el funcionamiento del sistema:</p>
-![image](https://github.com/carlosab2021/SteamVideos/assets/86332466/0cb7f412-ef62-407a-a792-b1dc112d3bd5)
-![image](https://github.com/carlosab2021/SteamVideos/assets/86332466/1f712fc9-cf76-492f-afed-d874bd9843e4)
+<p align="center">
+<img src=https://github.com/carlosab2021/SteamVideos/assets/86332466/0cb7f412-ef62-407a-a792-b1dc112d3bd5></p>
+<p align="center">
+<img src=https://github.com/carlosab2021/SteamVideos/assets/86332466/1f712fc9-cf76-492f-afed-d874bd9843e4></p>
 
 
 <p align="justify">En ambos sistemas, la similitud de coseno es fundamental para determinar las similitudes entre juegos o usuarios. Esto permite recomendar juegos en función de similitudes de contenido o de comportamiento del usuario, respectivamente. Las recomendaciones se generan considerando las similitudes más altas y seleccionando los 5 juegos más similares en cada caso, con la finalidad de renderizar estas app y debido a una memoria limitada de la página de Render, decidí utilizar una muestra de la base de datos consistente en aproximadamente 550 usuarios, cabe alarar que el sistema funciona en forma óptima si realizo las pruebas en el localhost, con la base de datos en su totalidad</p>
